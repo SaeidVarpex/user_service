@@ -1,0 +1,71 @@
+# Python & Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv
+ENV/
+env.bak/
+venv.bak/
+
+# Virtual Environment
+pip-delete-this-directory.txt
+pip-selfcheck.json
+
+# Django specific
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Environment variables
+.env
+.env.local
+.env.* 
+
+# Migrations (اختیاری - اگر migrations رو نمی‌خوای کامیت کنی، ولی معمولاً کامیت می‌کنن)
+# migrations/
+
+# Static & Media (اگر جمع‌آوری می‌کنی)
+staticfiles/
+collected_static/
+
+# IDE & Editor
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.tmlanguage.cache
+*.tmPreferences.cache
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing & Coverage
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
+.tox/
+.coverage
+
+# Celery (اگر بعداً استفاده کردی)
+celerybeat-schedule
+celeryd.pid
+
+# Docker (اگر بعداً اضافه کردی)
+docker-compose.override.yml
