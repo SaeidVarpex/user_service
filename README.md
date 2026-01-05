@@ -1,4 +1,4 @@
-# Project Name (Replace with your actual project name)
+# User Service
 
 [![Django Version](https://img.shields.io/badge/Django-5.0+-green)](https://www.djangoproject.com/)
 [![Python Version](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
@@ -39,8 +39,8 @@ This project is designed as a learning resource for new Django developers.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/your-project-name.git
-   cd your-project-name
+   git clone https://github.com/SaeidVarpex/user_service.git
+   cd user_service
    ```
 
 2. Create and activate a virtual environment:
@@ -106,3 +106,7 @@ Access the admin panel at /admin/ with your superuser credentials. All models ar
 - Use Gunicorn + Nginx or deploy to Heroku/Render/DigitalOcean.
 - Set DEBUG=False and PostgreSQL env vars in production.
 - Collect static files: python manage.py collectstatic
+
+## License
+
+MIT License
