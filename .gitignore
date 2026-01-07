@@ -69,3 +69,5 @@ celeryd.pid
 
 # Docker (اگر بعداً اضافه کردی)
 docker-compose.override.yml
+
+user_service/jwt_keys/prod_*.pem

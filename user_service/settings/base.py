@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
 
     # اپ‌های محلی
-    'core',
     'users',
     'authentication',
 ]
@@ -147,7 +146,7 @@ REST_FRAMEWORK = {
 }
 
 # تنظیمات Simple JWT
-SIMPLE_JWT = {
+"""SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
@@ -167,6 +166,49 @@ SIMPLE_JWT = {
 
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
+}"""
+
+#import os
+#from pathlib import Path
+
+#BASE_DIR = Path(__file__).resolve().parent.parent
+
+JWT_KEYS_DIR = BASE_DIR / "user_service" / "jwt_keys"
+
+# مسیر کلیدهای production
+PROD_PRIVATE_KEY = JWT_KEYS_DIR / "prod_private.pem"
+PROD_PUBLIC_KEY = JWT_KEYS_DIR / "prod_public.pem"
+
+# مسیر کلیدهای development
+DEV_PRIVATE_KEY = JWT_KEYS_DIR / "dev_private.pem"
+DEV_PUBLIC_KEY = JWT_KEYS_DIR / "dev_public.pem"
+
+
+def read_key(path: Path) -> str | None:
+    if path.exists():
+        return path.read_text()
+    return None
+
+
+# انتخاب کلیدها
+SIGNING_KEY = read_key(PROD_PRIVATE_KEY) or read_key(DEV_PRIVATE_KEY)
+VERIFYING_KEY = read_key(PROD_PUBLIC_KEY) or read_key(DEV_PUBLIC_KEY)
+
+if not SIGNING_KEY or not VERIFYING_KEY:
+    raise RuntimeError("JWT keys are missing. No valid key pair found.")
+
+
+SIMPLE_JWT = {
+    "ALGORITHM": "RS256",
+    "SIGNING_KEY": SIGNING_KEY,
+    "VERIFYING_KEY": VERIFYING_KEY,
+
+    # پیشنهاد حرفه‌ای
+    "ISSUER": "user-service",
+    "AUDIENCE": "api-gateway",
+
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
 # امنیت اضافی (در prod مهم‌تره)
