@@ -5,6 +5,7 @@ from .views import (
     LogoutView,
     ProfileView,
     ChangePasswordView,
+    TokenDecodeView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -17,4 +18,5 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('token/decode/', TokenDecodeView.as_view(), name='token-decode'),
 ]

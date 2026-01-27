@@ -1,10 +1,10 @@
-from rest_framework import status, permissions, generics
+from rest_framework import status, permissions, generics, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import get_user_model
-from .serializers import CustomTokenObtainPairSerializer
+from .serializers import CustomTokenObtainPairSerializer, TokenDecodeSerializer
 from users.serializers import (
     RegisterSerializer,
     UserProfileSerializer,
@@ -86,3 +86,121 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         return UserAdminSerializer
+
+
+# api/token_views.py
+from rest_framework.permissions import AllowAny, IsAuthenticated
+import jwt
+from django.conf import settings
+
+
+# api/token_views.py
+from rest_framework.generics import GenericAPIView
+from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer, HTMLFormRenderer
+from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
+
+
+class TokenDecodeView(GenericAPIView):
+    """
+    Token decode view with proper form rendering
+    """
+    permission_classes = [AllowAny]
+    serializer_class = TokenDecodeSerializer
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer, HTMLFormRenderer]
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
+    
+    def get_serializer_context(self):
+        """Add request to serializer context for form rendering"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    def get(self, request, *args, **kwargs):
+        """
+        Render form for token input
+        """
+        serializer = self.get_serializer()
+        return Response({
+            "instructions": "Enter JWT token and options below",
+            "form": {
+                "fields": [
+                    {
+                        "name": "token",
+                        "type": "textarea",
+                        "required": True,
+                        "label": "JWT Token",
+                        "help_text": "Paste your complete JWT token"
+                    },
+                    {
+                        "name": "verify_exp",
+                        "type": "checkbox",
+                        "default": True,
+                        "label": "Verify expiration"
+                    },
+                    {
+                        "name": "verify_aud",
+                        "type": "checkbox",
+                        "default": True,
+                        "label": "Verify audience"
+                    },
+                    {
+                        "name": "verify_iss",
+                        "type": "checkbox", 
+                        "default": True,
+                        "label": "Verify issuer"
+                    }
+                ]
+            }
+        })
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get validated data
+        token = serializer.validated_data['token']
+        verify_exp = serializer.validated_data.get('verify_exp', True)
+        verify_aud = serializer.validated_data.get('verify_aud', True)
+        verify_iss = serializer.validated_data.get('verify_iss', True)
+        
+        try:
+            # Decode options
+            options = {
+                'verify_exp': verify_exp,
+                'verify_aud': verify_aud,
+                'verify_iss': verify_iss,
+            }
+            
+            # Decode the token
+            decoded_payload = jwt.decode(
+                token,
+                settings.SIMPLE_JWT["VERIFYING_KEY"],
+                algorithms=[settings.SIMPLE_JWT["ALGORITHM"]],
+                audience=settings.SIMPLE_JWT["AUDIENCE"] if verify_aud else None,
+                issuer=settings.SIMPLE_JWT["ISSUER"] if verify_iss else None,
+                options=options
+            )
+            
+            # Prepare response
+            response_data = {
+                "success": True,
+                "token_input": f"{token[:50]}..." if len(token) > 50 else token,
+                "payload": decoded_payload,
+                "validation_options_used": {
+                    "verify_exp": verify_exp,
+                    "verify_aud": verify_aud,
+                    "verify_iss": verify_iss,
+                }
+            }
+            
+            return Response(response_data)
+            
+        except jwt.InvalidTokenError as e:
+            return Response(
+                {
+                    "success": False,
+                    "error": str(e),
+                    "error_type": e.__class__.__name__
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
